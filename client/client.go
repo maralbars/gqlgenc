@@ -155,8 +155,9 @@ func parseResponse(body []byte, httpCode int, result interface{}) error {
 
 // response is a GraphQL layer response from a handler.
 type response struct {
-	Data   json.RawMessage `json:"data"`
-	Errors json.RawMessage `json:"errors"`
+	Data       json.RawMessage `json:"data"`
+	Extensions json.RawMessage `json:"extensions"`
+	Errors     json.RawMessage `json:"errors"`
 }
 
 func unmarshal(data []byte, res interface{}) error {
@@ -176,6 +177,10 @@ func unmarshal(data []byte, res interface{}) error {
 	}
 
 	if err := graphqljson.UnmarshalData(resp.Data, res); err != nil {
+		return xerrors.Errorf("failed to decode data into response %s: %w", string(data), err)
+	}
+
+	if err := graphqljson.UnmarshalData(resp.Extensions, res); err != nil {
 		return xerrors.Errorf("failed to decode data into response %s: %w", string(data), err)
 	}
 
